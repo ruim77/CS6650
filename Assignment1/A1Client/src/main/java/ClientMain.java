@@ -32,12 +32,16 @@
       initialPool.awaitTermination(1, TimeUnit.HOURS);
 
       // Phase 2: Dynamic threads for remaining events
-      AtomicInteger currentIndex = new AtomicInteger(INITIAL_THREADS * REQUESTS_PER_INITIAL_THREAD);
-      ExecutorService dynamicPool = Executors.newCachedThreadPool();
-
       // Create threads proportional to CPU cores
       int availableCores = Runtime.getRuntime().availableProcessors();
-      for (int i = 0; i < availableCores * 12; i++) {
+      int dynamicThreads = availableCores * 12;
+      ExecutorService dynamicPool = Executors.newFixedThreadPool(dynamicThreads);
+      AtomicInteger currentIndex = new AtomicInteger(INITIAL_THREADS * REQUESTS_PER_INITIAL_THREAD);
+
+      System.out.println("\n===== Phase 2 Starting =====");
+      System.out.println("Available CPU cores: " + availableCores);
+      System.out.println("Dynamic threads: " + dynamicThreads);
+      for (int i = 0; i < dynamicThreads; i++) {
         dynamicPool.submit(() -> {
           while (currentIndex.get() < TOTAL_EVENTS) {
             int idx = currentIndex.getAndIncrement();
